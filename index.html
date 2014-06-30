@@ -102,6 +102,7 @@
                 $(".startTimer").removeAttr("disabled");
                 $(this).attr("disabled", "");
                 $(".splitTimer").attr("disabled", "");
+                $(".splitTimer").html("Take Break");
                 $isRunning = 0;
                 $timerFlag = 0;
                 updateTimer($( "#work-slider" ).slider( "value" ) ,0);
