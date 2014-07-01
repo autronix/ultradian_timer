@@ -54,6 +54,46 @@
             margin-top: 20px;
         }
 
+        .btn {
+            margin-bottom: 5px;;
+        }
+
+        #log_wrapper {
+            width: 600px;
+            margin-left:50px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        #log_header {
+            width: 100%;
+            border-bottom: solid thin rgba(157, 157, 157,0.75);
+            margin-bottom: 5px;
+            font-weight: bold;
+            height: 20px;
+        }
+
+        #log {
+            width: 100%;
+            height: 190px;
+            overflow-y: auto;
+            clear: both;
+            margin-bottom: 10px;
+        }
+
+        .log_entry {
+            width:100%;
+            text-align: left;
+            clear: both;
+            height: 20px;
+        }
+
+        .log_field {
+            min-width: 125px;
+            float: left;
+            line-height: 20px;
+        }
+
     </style>
 
     <script>
@@ -61,6 +101,13 @@
 
             $timerFlag = 0;
             $isRunning = 0;
+            $log = Array();
+            $log.push("Date;Time;Duration (hh:mm:ss);Description\r\n");
+            $cnt=0;
+
+
+
+            //******* Sliders *********//
 
             $( "#work-slider" ).slider({
                 range: "min",
@@ -88,38 +135,55 @@
 
             createTimer($("#work-slider").slider("value") * 60);
 
+            //******* Button clicks *********//
+
+            // Start the session
             $(".startTimer").click(function() {
+                logTime($cnt++,"Session Started", 1);
+
                 $("#counter").TimeCircles().restart();
                 $(".stopTimer").removeAttr("disabled");
                 $(".splitTimer").removeAttr("disabled");
+                $(".pauseTimer").removeAttr("disabled");
                 $(this).attr("disabled", "");
                 $isRunning = 1;
                 playSound(0);
+
+
             });
 
+            // Stop the session
             $(".stopTimer").click(function() {
+                logTime($cnt++,"Session Ended", 1);
+
                 $("#counter").TimeCircles().stop();
                 $(".startTimer").removeAttr("disabled");
                 $(this).attr("disabled", "");
                 $(".splitTimer").attr("disabled", "");
+                $(".pauseTimer").attr("disabled", "");
                 $(".splitTimer").html("Take Break");
                 $isRunning = 0;
                 $timerFlag = 0;
                 updateTimer($( "#work-slider" ).slider( "value" ) ,0);
                 playSound(3);
+
             });
 
+            // Take a break/Resume work
             $(".splitTimer").click(function() {
 
                 // get current countdown value
                 var val = $("#counter").data('timer');
                 if($timerFlag == 1) {
+                    logTime($cnt++,"Activity Resumed", 0);
                     createTimer($("#work-slider").slider("value") * 60);
                     //$("#counter").data('timer', "5400");
                     $timerFlag = 0;
                     $(".splitTimer").html("Take Break");
+
                 }
                 else {
+                    logTime($cnt++,"Break Taken", 0);
                     createTimer($("#break-slider").slider("value") * 60);
                     //$("#counter").data('timer', "1200");
                     $timerFlag = 1
@@ -130,6 +194,45 @@
                 //$("#counter").TimeCircles().destroy();
                 //createTimer("1200");
                 $("#counter").TimeCircles().start(); //*/
+            });
+
+            // Pause the timer
+            $(".pauseTimer").click(function() {
+
+                if($isRunning == 1){
+                    logTime($cnt++, "Timer Paused",0);
+                    $("#counter").TimeCircles().stop();
+                    $(this).html("Resume");
+                    $(".splitTimer").attr("disabled", "");
+                    $isRunning = 0;
+
+
+                }
+                else {
+                    logTime($cnt++, "Timer Resumed",1);
+                    $("#counter").TimeCircles().start();
+                    $(this).html("Pause");
+                    $(".splitTimer").removeAttr("disabled");
+                    $isRunning = 1;
+
+
+                }
+                playSound(0);
+
+
+
+            });
+
+            // Download CSV file
+            $(".exportLog").on('click',function (event) {
+                downloadCSV.apply(this);
+            })
+
+            // Clear log
+            $(".clearLog").click(function(){
+                $("#log").html("");
+                $log = Array();
+                $log.push("Date;Time;Duration (hh:mm:ss);Description\r\n");
             });
         });
 
@@ -181,6 +284,73 @@
                 audioElement.play();
             }, true);//*/
         }
+
+        function logTime(cnt, msg, flag){
+            timer = $("#counter").TimeCircles().getTime();
+
+            elapsed = "-";
+            if(flag==0){
+            if($timerFlag == 0)
+                elapsed = parseInt($( "#work-slider" ).slider( "value" ))*60-Math.floor(timer);
+            else
+                elapsed =  parseInt($( "#break-slider" ).slider( "value" ))*60-Math.floor(timer);
+            }
+
+            hours = Math.floor(elapsed/60/60);
+            min = Math.floor(elapsed/60)-hours*60;
+            secs = elapsed-min*60-hours*60*60;
+
+            if(flag==0)
+                el = ((hours<10)?"0"+hours:hours)+":"+((min<10)?"0"+min:min)+":"+((secs<10)?"0"+secs:secs);
+            else
+                el = elapsed;
+
+            date = new Date();
+            ctime= date.getHours()+":"+((date.getMinutes()<10)?"0"+date.getMinutes():date.getMinutes())+":"+date.getSeconds();
+            addLogEntry(ctime,msg,el, cnt);
+
+            day = ((date.getDay()<10)?"0"+date.getDay():date.getDay());
+            month = ((date.getMonth()<10)?"0"+date.getMonth():date.getMonth());
+            year = date.getFullYear();
+            cdate = year+"-"+month+"-"+day;
+
+            $log.push(cdate+";"+ctime+";"+el+";"+msg+"\r\n");
+        }
+
+        function addLogEntry(time, desc, elapsed, entrynum){
+
+            target = $("#log");
+            color = "";
+
+            if(entrynum%2 == 1)
+                color = "background: rgba(157, 157, 157,0.25)";
+
+            tpl = "<div class='log_entry' style='"+color+"'><div class='log_field'>"+time+"</div><div class='log_field'>"+elapsed+"</div><div class='log_field'>"+desc+"</div></div>";
+
+            //alert(tpl);
+
+            target.prepend(tpl);
+
+
+        }
+
+        function downloadCSV(){
+
+            csv = "";
+            for(i=0; i<$log.length; i++)
+                csv += $log[i];
+
+            csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+            datadownload = '="text/plain:ultradian_log.csv:'+csvData;
+            //alert(csvData);
+
+            $(".exportLog").attr({
+                'download': "ultradian_log.csv",
+                'data-downloadurl':datadownload,
+                'href': csvData,
+                'target': '_blank'
+            });
+        }
     </script>
 
 </head>
@@ -189,9 +359,14 @@
     <div id="wrapper">
         <div id="counter"></div>
         <div id="controls">
-            <button class="btn btn-success startTimer">Start Session</button>
-            <button class="btn btn-info splitTimer" disabled>Take Break</button>
-            <button class="btn btn-danger stopTimer" disabled>Stop Session</button>
+            <div>
+                <button class="btn btn-success startTimer">Start Session</button>
+                <button class="btn btn-info splitTimer" disabled>Take Break</button>
+                <button class="btn btn-danger stopTimer" disabled>Stop Session</button>
+            </div>
+            <div>
+                <button class="btn btn-info pauseTimer" disabled>Pause</button>
+            </div>
         </div>
         <div id="setup">
             <label for="work-amount">Work Time:</label>
@@ -200,6 +375,22 @@
             <label for="break-amount">Break Time:</label>
             <input type="text" id="break-amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
             <div id="break-slider"></div>
+        </div>
+        <div id="log_wrapper">
+            <div id="log_header">
+                <div class="log_entry">
+                    <div class="log_field">Time</div>
+                    <div class="log_field">Duration (hh:mm:ss)</div>
+                    <div class="log_field">Description</div>
+                </div>
+            </div>
+            <div id="log">
+
+            </div>
+            <div id="log_control">
+                <a class="btn btn-success exportLog">Export Log to CSV</a>
+                <button class="btn btn-danger clearLog">Clear Log</button>
+            </div>
         </div>
     </div>
 

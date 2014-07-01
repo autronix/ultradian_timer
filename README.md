@@ -14,7 +14,7 @@ When the countdowns reached 0, an alarm will ring
 
 Version
 -------
-1.0.1
+1.1.0
 
 Usage
 -----
@@ -28,6 +28,10 @@ Simply clone/download the repo and run index.php on your favorite browser (teste
 * Press "Stop session" to stop and reset the timer  
 
 ####Note: the break/resume needs to be activated manually by the user in order to switch the timers - the timer will count positively after it has reached 0 and until the break/resume button is pressed. 
+
+Changelog
+---------
+1.1 - Added Pause button, Time log and export to CSV file.
 
 Future Versions and TODO
 --------
