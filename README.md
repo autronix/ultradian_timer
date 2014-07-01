@@ -1,7 +1,7 @@
 Ultradian Timer
 ===============
 
-This timer is based on research from [Peretz Lavie] [2] on “ultradian rhythms” which matches our human's natural attention rythm and break requirements.
+This timer is based on research from [Peretz Lavie] [2] on "ultradian rhythms" which matches our human's natural attention rythm and break requirements.
 
 The concept is based on having a longer work session (typically around 90 minutes) followed by shorter break sessions (around 15 minutes).
 
@@ -10,11 +10,11 @@ Basic Description
 
 The Ultradian Timer is a simple HTML5/Javascript script that produces an adjustable timer intended to follow the Ultradian Rythms in order to improve productivity for any given activity on any given workday.
 
-When the countdowns reache 0, an alarm will ring
+When the countdowns reached 0, an alarm will ring
 
 Version
 -------
-1.0
+1.0.1
 
 Usage
 -----
@@ -46,7 +46,6 @@ License
 ----
 
 MIT
-
 
 [2]:http://www.dtic.mil/cgi-bin/GetTRDoc?AD=ADA296199
 [3]:http://oringz.com/
